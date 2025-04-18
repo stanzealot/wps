@@ -382,6 +382,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
   void initState() {
     super.initState();
     _setupNavigationByRole();
+
+    // Check for route arguments to set initial tab
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final args = ModalRoute.of(context)?.settings.arguments as Map?;
+      if (args != null && args['tabIndex'] != null) {
+        setState(() {
+          _selectedIndex = args['tabIndex'];
+        });
+      }
+    });
   }
 
   void _setupNavigationByRole() {
@@ -425,7 +435,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     // Add admin dashboard for admins
     if (currentUser.role == UserRole.admin) {
-      // _widgetOptions.add(const AdminControlPanel());
+      _widgetOptions.add(const AdminControlPanel());
       _navigationItems.add(const BottomNavigationBarItem(
         icon: Icon(Icons.admin_panel_settings),
         label: 'Admin',
@@ -448,7 +458,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
           IconButton(
             icon: const Icon(Icons.notifications),
             onPressed: () {
-              // Would show notifications in a real app
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                     content: Text('Notifications would appear here')),
@@ -457,33 +466,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
           IconButton(
             icon: const Icon(Icons.logout),
-            onPressed: () {
-              // Confirm logout
-              showDialog(
-                context: context,
-                builder: (context) => AlertDialog(
-                  title: const Text('Logout'),
-                  content: const Text('Are you sure you want to logout?'),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('Cancel'),
-                    ),
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const LoginScreen(),
-                          ),
-                        );
-                      },
-                      child: const Text('Logout'),
-                    ),
-                  ],
-                ),
-              );
-            },
+            onPressed: () => _confirmLogout(),
           ),
         ],
       ),
@@ -493,6 +476,33 @@ class _DashboardScreenState extends State<DashboardScreen> {
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
         type: BottomNavigationBarType.fixed, // Needed for 4+ items
+      ),
+    );
+  }
+
+  void _confirmLogout() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Logout'),
+        content: const Text('Are you sure you want to logout?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const LoginScreen(),
+                ),
+              );
+            },
+            child: const Text('Logout'),
+          ),
+        ],
       ),
     );
   }
